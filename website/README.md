@@ -1,9 +1,10 @@
 ### Develop
 ```
+bun install
 bun dev
 ```
 
 ### Test
 ```
-bun test
+bun run test
 ```

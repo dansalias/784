@@ -1,4 +1,4 @@
-import { expect, test } from 'bun:test'
+import { expect, test } from 'vitest'
 import { fprop } from './network'
 
 test('fprop', () => {
@@ -13,5 +13,5 @@ test('fprop', () => {
         bias: -1.0,
       },
     ]
-  ], [0.5, 0.5])).toBe([0.25, 0.0])
+  ], [0.5, 0.5])).toEqual([0.25, 0.0])
 })
