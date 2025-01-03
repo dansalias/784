@@ -1,0 +1,19 @@
+{
+  "name": "website",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0-beta.8",
+    "@types/bun": "^1.1.14",
+    "@vitest/browser": "^2.1.8",
+    "glob": "^11.0.0",
+    "playwright": "^1.49.1",
+    "tailwindcss": "^4.0.0-beta.8",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6",
+    "vitest": "^2.1.8"
+  }
+}
