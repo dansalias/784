@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "lib": ["es2023", "dom"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "types": ["bun", "vite/client"]
+  }
+}
