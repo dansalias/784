@@ -5,7 +5,3 @@
   --font-sans: "Open Sans", sans-serif;
   --font-display: "Caveat", sans-serif;
 }
-
-.debug {
-  @apply hidden;
-}

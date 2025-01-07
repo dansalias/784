@@ -1,11 +1,11 @@
-import { SefDemo } from './components/sef-demo'
-import { SefDemoCanvas } from './components/sef-demo-canvas'
-import { SefDemoCanvasGrid } from './components/sef-demo-canvas-grid'
+import { createApp, reactive } from 'vue'
+import App from './components/App.vue'
 
-window.customElements.define('sef-demo', SefDemo)
-window.customElements.define('sef-demo-canvas', SefDemoCanvas)
-window.customElements.define('sef-demo-canvas-grid', SefDemoCanvasGrid)
+const state = reactive({
+  isMobile: 'ontouchstart' in window,
+  showDebug: new URL(window.location.href).searchParams.has('debug'),
+})
 
-if (new URL(window.location.href).searchParams.has('debug')) {
-  document.querySelectorAll('.debug').forEach(el => el.classList.remove('debug'))
-}
+export const useState = () => state
+
+createApp(App).mount('#app')
