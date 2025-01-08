@@ -8,6 +8,10 @@ on:
     paths:
       - 'website'
 
+defaults:
+  run:
+    working-directory: ./website
+
 jobs:
   build:
     runs-on: ubuntu-latest
