@@ -55,7 +55,7 @@ impl Network {
 }
 
 #[cfg(test)]
-mod  tests {
+mod tests {
     use super::*;
     use crate::math;
 
