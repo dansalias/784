@@ -1,6 +1,5 @@
 use std::{fs, io::{Read, Write, Error}};
-
-type Parameters = Vec<Vec<(Vec<f64>, f64)>>;
+use crate::parameters::Parameters;
 
 pub fn read_file(path: &str) -> Result<Parameters, Error> {
     let file = fs::File::create(path)?;
