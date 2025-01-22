@@ -7,12 +7,14 @@ pub trait ActivationFunction {
     fn bprop(&self, input: &[f64]) -> Vec<f64>;
 }
 
-pub type Layer = (usize, Box<dyn ActivationFunction>);
+pub type Layer = (usize, Option<Box<dyn ActivationFunction>>);
 
 pub struct Network {
     pub input_size: usize,
     pub layers: Vec<Layer>,
     pub parameters: parameters::Parameters,
+
+    activations: Vec<(Vec<f64>, Vec<f64>)>,
 }
 
 impl Network {
@@ -24,33 +26,110 @@ impl Network {
             input_size,
             layers,
             parameters: vec![],
+            activations: vec![],
         }
     }
 
-    pub fn fprop(&self, input: &[f64]) -> Vec<f64> {
+    pub fn fprop(&mut self, input: &[f64]) -> Vec<f64> {
+        self.activations = vec![(
+            input.to_vec(),
+            input.to_vec(),
+        )];
+
         self
             .parameters
             .iter()
-            .zip(
-                self
-                    .layers
-                    .iter()
-            )
-            .fold(input.to_vec(), |input, (parameters, (_, activation_function))|
-                activation_function.fprop(
-                    &parameters
+            .zip(self.layers.iter())
+            .fold(input.to_vec(), |input, (parameters, (_, activation_function))| {
+                let weighted_sums =
+                    parameters
                         .iter()
                         .map(|(weights, bias)|
                             weights
                                 .iter()
-                                .zip(&input)
+                                .zip(input.iter())
                                 .map(|(w, i)| w * i)
                                 .sum::<f64>()
                             + bias
                         )
-                        .collect::<Vec<f64>>()
-                )
+                        .collect::<Vec<f64>>();
+
+                let activations = match activation_function {
+                    Some(af) => af.fprop(&weighted_sums),
+                    _ => weighted_sums.to_vec(),
+                };
+
+                self.activations.push((
+                    weighted_sums,
+                    activations.to_vec(),
+                ));
+
+                activations
+            })
+    }
+
+    pub fn bprop(&mut self, error: &[f64], learning_rate: f64) {
+        self
+            .layers
+            .iter()
+            .enumerate()
+            .zip(
+                self
+                    .activations[..self.activations.len() - 1]
+                    .iter()
+                    .zip(self.activations[1..].iter())
             )
+            .rfold(
+                error.to_vec(),
+                |
+                    gradient,
+                    ((layer_index, (_, activation_function)), (
+                        (_, input_activations),
+                        (output_weighted_sums, _),
+                    ))
+                | {
+                    let gradient: Vec<f64> =
+                        gradient
+                            .iter()
+                            .zip((
+                                match activation_function {
+                                    Some(af) => af.bprop(&output_weighted_sums),
+                                    _ => vec![1.0; output_weighted_sums.len()],
+                                }
+                            ).iter())
+                            .map(|(da, dz)| da * dz)
+                            .collect();
+
+                    let next_gradient = (0..input_activations.len())
+                        .map(|i|
+                            gradient
+                                .iter()
+                                .zip(self
+                                    .parameters[layer_index]
+                                    .iter()
+                                    .map(|(weights, _)| weights[i])
+                                )
+                                .map(|(g, w)| g * w)
+                                .sum::<f64>()
+                        )
+                        .collect::<Vec<f64>>();
+
+                    self.parameters[layer_index] =
+                        self.parameters[layer_index]
+                            .iter()
+                            .zip(gradient)
+                            .map(|((weights, bias), g)| (
+                                weights
+                                    .iter()
+                                    .zip(input_activations)
+                                    .map(|(w, a)| w + g * a * learning_rate)
+                                    .collect(),
+                                bias + g * learning_rate,
+                            ))
+                            .collect();
+
+                    next_gradient
+            });
     }
 }
 
@@ -59,30 +138,57 @@ mod tests {
     use super::*;
     use crate::math;
 
-    #[test]
-    fn propagates_forward() {
+    fn get_test_network() -> Network {
         let mut network = Network::new(
             3,
             vec![
-                (2, Box::new(math::Relu)),
-                (2, Box::new(math::Relu)),
+                (2, Some(Box::new(math::Relu))),
+                (2, None),
             ],
         );
 
         network.parameters = vec![
             vec![
-                (vec![ 0.2, 0.2, 0.3 ], 0.1),
-                (vec![ 0.2, 0.3, 0.4 ], 0.1),
+                (vec![0.5, 1.0, 1.0], 0.5),
+                (vec![1.0, 0.0, 0.0], 0.5),
             ],
             vec![
-                (vec![ 0.2, 0.3 ], 0.1),
-                (vec![ 0.3, 0.4 ], -0.5),
+                (vec![0.5, 1.0], 0.5),
+                (vec![1.0, 1.0], 0.5),
             ],
         ];
 
+        network
+    }
+
+    #[test]
+    fn propagates_forward() {
         assert_eq!(
-            network.fprop(&[ 0.3, 0.2, 0.1 ]),
-            vec![ 0.224, 0.0 ],
+            get_test_network().fprop(&[-1.0, 1.0, 1.0]),
+            vec![1.5, 2.5],
+        );
+    }
+
+    #[test]
+    fn propagates_backward() {
+        let mut network = get_test_network();
+
+        network.fprop(&[-1.0, 1.0, 1.0]);
+
+        network.bprop(&[1.0, 0.5], 1.0);
+
+        assert_eq!(
+            network.parameters,
+            vec![
+                vec![
+                    (vec![-0.5, 2.0, 2.0], 1.5),
+                    (vec![1.0, 0.0, 0.0], 0.5),
+                ],
+                vec![
+                    (vec![2.5, 1.0], 1.5),
+                    (vec![2.0, 1.0], 1.0),
+                ],
+            ],
         );
     }
 }
