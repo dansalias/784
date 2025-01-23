@@ -10,6 +10,11 @@ pub struct DataPoint {
     pub expected: Vec<f64>,
 }
 
+pub struct Data {
+    pub test: Vec<DataPoint>,
+    pub train: Vec<DataPoint>,
+}
+
 pub enum Dataset {
     Test,
     Train,

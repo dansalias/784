@@ -1,10 +1,17 @@
 pub mod data;
 pub mod math;
 pub mod parameters;
+pub mod training;
+pub mod util;
 
 pub trait ActivationFunction {
     fn fprop(&self, input: &[f64]) -> Vec<f64>;
     fn bprop(&self, input: &[f64]) -> Vec<f64>;
+}
+
+pub trait LossFunction {
+    fn fprop(&self, actual: &[f64], expected: &[f64]) -> Vec<f64>;
+    fn bprop(&self, actual: &[f64], expected: &[f64]) -> Vec<f64>;
 }
 
 pub type Layer = (usize, Option<Box<dyn ActivationFunction>>);
@@ -136,42 +143,19 @@ impl Network {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::math;
-
-    fn get_test_network() -> Network {
-        let mut network = Network::new(
-            3,
-            vec![
-                (2, Some(Box::new(math::Relu))),
-                (2, None),
-            ],
-        );
-
-        network.parameters = vec![
-            vec![
-                (vec![0.5, 1.0, 1.0], 0.5),
-                (vec![1.0, 0.0, 0.0], 0.5),
-            ],
-            vec![
-                (vec![0.5, 1.0], 0.5),
-                (vec![1.0, 1.0], 0.5),
-            ],
-        ];
-
-        network
-    }
+    use crate::util::test;
 
     #[test]
     fn propagates_forward() {
         assert_eq!(
-            get_test_network().fprop(&[-1.0, 1.0, 1.0]),
+            test::get_test_network().fprop(&[-1.0, 1.0, 1.0]),
             vec![1.5, 2.5],
         );
     }
 
     #[test]
     fn propagates_backward() {
-        let mut network = get_test_network();
+        let mut network = test::get_test_network();
 
         network.fprop(&[-1.0, 1.0, 1.0]);
 
