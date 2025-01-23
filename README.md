@@ -1,1 +1,1 @@
-Experiments in neural network. [784.ai](https://784.ai)
+Experiments in neural networks. [784.ai](https://784.ai)
