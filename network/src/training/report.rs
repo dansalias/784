@@ -36,8 +36,8 @@ impl Reporter {
 
         print!("{esc}c", esc = 27 as char);
         println!("training...");
-        println!("epoch:     {:0>3} / {:0>3}", epoch, 8);
-        println!("batch:     {:0>4} / {:0>4}", iteration, 1875);
+        println!("epoch:     {:0>3} / {:0>3}", epoch, epoch_count);
+        println!("batch:     {:0>4} / {:0>4}", iteration, iteration_count);
         println!("progress:  {:.2?}%", progress * 100.0);
         println!("elapsed:   {}", format_duration(elapsed));
         println!("remaining: {}", format_duration(remaining));
