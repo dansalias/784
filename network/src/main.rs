@@ -21,7 +21,7 @@ fn main() {
         },
         training::TrainingOptions {
             batch_size: 32,
-            epoch_count: 8,
+            epoch_count: 24,
             learning_rate: 0.01,
             loss_function: Box::new(math::CrossEntropy),
         },
