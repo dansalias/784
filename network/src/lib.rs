@@ -16,6 +16,16 @@ pub trait LossFunction {
 
 pub type Layer = (usize, Option<Box<dyn ActivationFunction>>);
 
+pub fn structure_from_layers(input_size: usize, layers: &[Layer]) -> Vec<usize> {
+    std::iter::once(input_size)
+        .chain(
+            layers
+                .iter()
+                .map(|(size, _)| *size)
+        )
+        .collect()
+}
+
 pub struct Network {
     pub input_size: usize,
     pub layers: Vec<Layer>,
@@ -31,8 +41,10 @@ impl Network {
     ) -> Network {
         Network {
             input_size,
+            parameters: parameters::Parameters::new(
+                structure_from_layers(input_size, &layers),
+            ),
             layers,
-            parameters: vec![],
             activations: vec![],
         }
     }
@@ -43,8 +55,10 @@ impl Network {
             input.to_vec(),
         )];
 
-        self
-            .parameters
+        parameters::convert::to_structured(
+            &self.parameters.raw,
+            structure_from_layers(self.input_size, &self.layers),
+        )
             .iter()
             .zip(self.layers.iter())
             .fold(input.to_vec(), |input, (parameters, (_, activation_function))| {

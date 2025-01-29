@@ -1,7 +1,7 @@
 pub mod report;
 pub mod backpropagation;
 
-use crate::{data::{Data, DataPoint}, LossFunction, Network};
+use crate::{data::{Data, DataPoint}, LossFunction, Network, parameters, util};
 use backpropagation::Gradient;
 use rand::{seq::SliceRandom, thread_rng};
 
@@ -30,8 +30,10 @@ pub fn train(
 
         let iteration_count = training_data.len() / options.batch_size;
 
+        let mut gradients: Vec<Gradient> = vec![];
+
         for (iteration, mini_batch) in batches.enumerate() {
-            let mut gradients: Vec<Gradient> = vec![];
+            gradients.clear();
 
             for data_point in mini_batch {
                 let output = network.fprop(&data_point.input);
@@ -47,28 +49,15 @@ pub fn train(
                 );
             }
 
-            for gradient in gradients {
-                for layer_index in 0..network.parameters.len() {
-                    for neuron_index in 0..network.parameters[layer_index].len() {
-                        network.parameters[layer_index][neuron_index] = (
-                            network.parameters[layer_index][neuron_index].0
-                                .iter()
-                                .enumerate()
-                                .map(|(i, w)|
-                                    w -
-                                        gradient[layer_index][neuron_index].0[i]
-                                        * options.learning_rate
-                                        / mini_batch.len() as f64
-                                )
-                                .collect(),
-                            network.parameters[layer_index][neuron_index].1 -
-                                gradient[layer_index][neuron_index].1
-                                * options.learning_rate
-                                / mini_batch.len() as f64,
-                        );
-                    }
-                }
-            }
+            let gradient = util::vector::el_mean(gradients.clone());
+
+            network.parameters.raw = network
+                .parameters
+                .raw
+                .iter()
+                .zip(gradient.iter())
+                .map(|(p, g)| p - g * options.learning_rate)
+                .collect();
 
             if iteration % 10 == 0 {
                 accuracy = Some(

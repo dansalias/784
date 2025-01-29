@@ -10,9 +10,8 @@ fn main() {
         ],
     );
 
-    network.parameters = parameters::generate::kaiming(&[
-        784, 300, 100, 10,
-    ]);
+    network.parameters = parameters::Parameters::new(vec![784, 300, 100, 10])
+        .initialize(parameters::Initialization::Kaiming);
 
     training::train(
         &mut network,
@@ -30,6 +29,7 @@ fn main() {
 
     parameters::binary::write_file(
         "./parameters.bin",
-        &network.parameters,
+        &network.parameters.raw,
+        &[784, 300, 100, 10],
     ).expect("unable to write parameters");
 }

@@ -1,9 +1,15 @@
-use crate::Network;
+use crate::structure_from_layers;
+use crate::{parameters, Network};
 
-pub type Gradient = Vec<Vec<(Vec<f64>, f64)>>;
+pub type Gradient = Vec<f64>;
 
 pub fn get_gradient(network: &Network, loss: &[f64]) -> Gradient {
     let mut gradient: Gradient = vec![];
+
+    let parameters = parameters::convert::to_structured(
+        &network.parameters.raw,
+        structure_from_layers(network.input_size, &network.layers),
+    );
 
     network
         .layers
@@ -37,34 +43,35 @@ pub fn get_gradient(network: &Network, loss: &[f64]) -> Gradient {
                     .map(|i|
                         layer_loss
                             .iter()
-                            .zip(network
-                                .parameters[layer_index]
-                                .iter()
-                                .map(|(weights, _)| weights[i])
+                            .zip(
+                                parameters[layer_index]
+                                    .iter()
+                                    .map(|(weights, _)| weights[i])
                             )
                             .map(|(g, w)| g * w)
                             .sum::<f64>()
                     )
                     .collect::<Vec<f64>>();
 
-                gradient.insert(
-                    0,
+                gradient.extend(
                     layer_loss
                         .iter()
-                        .map(|g| (
-                             input_activations
-                                 .iter()
-                                 .map(|a| g * a)
-                                 .collect(),
-                             *g,
-                        ))
-                        .collect(),
+                        .flat_map(|l|
+                            input_activations
+                                .iter()
+                                .map(move |a| l * a)
+                                .chain(
+                                    std::iter::once(*l)
+                                )
+                        )
+                        .rev()
                 );
 
                 propagation
             }
         );
 
+    gradient.reverse();
     gradient
 }
 
@@ -72,6 +79,7 @@ pub fn get_gradient(network: &Network, loss: &[f64]) -> Gradient {
 mod tests {
     use super::*;
     use crate::util::test;
+    use crate::parameters;
 
     #[test]
     fn gets_gradient() {
@@ -81,7 +89,7 @@ mod tests {
 
         assert_eq!(
             get_gradient(&network, &[1.0, 0.5]),
-            vec![
+            parameters::convert::to_flat(&vec![
                 vec![
                     (vec![-1.0, 1.0, 1.0], 1.0),
                     (vec![0.0, 0.0, 0.0], 0.0),
@@ -90,7 +98,7 @@ mod tests {
                     (vec![2.0, 0.0], 1.0),
                     (vec![1.0, 0.0], 0.5),
                 ],
-            ],
-        )
+            ]),
+        );
     }
 }
