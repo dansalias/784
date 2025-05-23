@@ -4,6 +4,6 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "target": "es2022",
-    "types": ["bun", "vite/client"]
+    "types": ["bun", "vite/client", "vitest.d.ts"]
   }
 }

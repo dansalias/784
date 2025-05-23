@@ -14,6 +14,10 @@ export class OutputImage {
     )
   }
 
+  clone(): OutputImage {
+    return new OutputImage(this.imageData)
+  }
+
   getPixels(): number[][] {
     const
       { width, height, data } = this.imageData,

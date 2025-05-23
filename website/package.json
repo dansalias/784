@@ -6,19 +6,11 @@
     "build": "vite build && cp ./params.bin ./dist",
     "test": "vitest"
   },
-  "dependencies": {
-    "vue": "^3.5.13"
-  },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.0.0-beta.8",
-    "@types/bun": "^1.1.14",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vitest/browser": "^2.1.8",
-    "glob": "^11.0.0",
-    "playwright": "^1.49.1",
-    "tailwindcss": "^4.0.0-beta.8",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.6",
-    "vitest": "^2.1.8"
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@vitest/browser": "^3.1.1",
+    "playwright": "^1.51.1",
+    "vite": "^6.1.0",
+    "vitest": "^3.1.1"
   }
 }

@@ -1,7 +1,58 @@
-@import "tailwindcss";
-@source "./components";
+:root {
+  --white: #ffffff;
+  --gray: #99a1afb0;
+  --gray-light: #ebe6e7;
+  --blue: #51a2ff;
+  --cyan: #53eafd;
+  --emerald: #d0fae5;
+  --indigo: #312c85;
 
-@theme {
+  --bg-gradient:
+      linear-gradient(135deg, var(--cyan), var(--emerald))
+      fixed;
+  --shadow: 0 10px 15px -3px #0000001a;
+
   --font-sans: "Open Sans", sans-serif;
   --font-display: "Caveat", sans-serif;
+}
+
+* {
+  background: none;
+  border: none;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  font-weight: inherit;
+  list-style-type: none;
+}
+
+html {
+  display: grid;
+  min-height: 100dvh;
+}
+
+body {
+  margin: auto;
+  padding: 1rem 0;
+  background: var(--bg-gradient);
+  font-family: var(--font-sans);
+  color: var(--indigo);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: 3.75rem;
+}
+
+strong {
+  font-weight: 700;
+}
+
+button {
+  cursor: pointer;
+}
+
+a.external {
+  font-size: 0.875rem;
+  text-decoration-style: dotted;
 }

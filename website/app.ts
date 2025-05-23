@@ -1,11 +1,8 @@
-import { createApp, reactive } from 'vue'
-import App from './components/App.vue'
+import { mount } from 'svelte'
+import App from './App.svelte'
 
-const state = reactive({
-  isMobile: 'ontouchstart' in window,
-  showDebug: new URL(window.location.href).searchParams.has('debug'),
+const app = mount(App, {
+  target: document.getElementById('app')!,
 })
 
-export const useState = () => state
-
-createApp(App).mount('#app')
+export default app
