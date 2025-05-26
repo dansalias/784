@@ -13,7 +13,6 @@ export const bind = (
   callback: (imageData: ImageData) => void,
 ) => {
   canvas = element
-  boundingClientRect = canvas.getBoundingClientRect()
   context = canvas.getContext('2d', { willReadFrequently: true })!
   onchange = callback
 
@@ -83,9 +82,11 @@ const scheduleRender = (publish: boolean = false) => {
 }
 
 const render = (publish: boolean) => {
+  boundingClientRect = canvas.getBoundingClientRect()
+
   const offset = {
-    x: boundingClientRect.left - window.scrollX,
-    y: boundingClientRect.top - window.scrollY,
+    x: boundingClientRect.left,
+    y: boundingClientRect.top,
   }
 
   for (const event of eventQueue) {
