@@ -164,4 +164,10 @@
       }
     }
   }
+
+  @media all and (max-width: 37rem) {
+    .demo-widget .right {
+      display: none;
+    }
+  }
 </style>
