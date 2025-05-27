@@ -5,6 +5,7 @@ let
   onchange: (imageData: ImageData) => void,
   eventQueue: PointerEvent[] = [],
   points: PointerEvent[] = [],
+  pointerId: number,
   isRenderScheduled = false,
   path = new Path2D()
 
@@ -38,6 +39,8 @@ const addPointerListeners = (canvas: HTMLCanvasElement) => {
   canvas.addEventListener('pointerdown', (event) => {
     canvas.setPointerCapture(event.pointerId)
 
+    pointerId = event.pointerId
+
     eventQueue.push(event)
 
     scheduleRender()
@@ -64,24 +67,24 @@ const addPointerListeners = (canvas: HTMLCanvasElement) => {
 
       eventQueue.push(event)
 
-      scheduleRender(true)
+      scheduleRender()
     }
   })
 }
 
-const scheduleRender = (publish: boolean = false) => {
+const scheduleRender = () => {
   if (!isRenderScheduled) {
     isRenderScheduled = true
 
     requestAnimationFrame(() => {
       isRenderScheduled = false
 
-      render(publish)
+      render()
     })
   }
 }
 
-const render = (publish: boolean) => {
+const render = () => {
   boundingClientRect = canvas.getBoundingClientRect()
 
   const offset = {
@@ -121,7 +124,7 @@ const render = (publish: boolean) => {
 
   eventQueue = []
 
-  if (publish) {
+  if (!canvas.hasPointerCapture(pointerId)) {
     onchange(context.getImageData(0, 0, canvas.width, canvas.height))
   }
 }
