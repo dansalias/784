@@ -1,33 +1,75 @@
 <script lang="ts">
-  import { connect } from '../util/network.svelte'
   import DemoWidgetDebug from './DemoWidgetDebug.svelte'
   import DemoWidgetEraseButton from './DemoWidgetEraseButton.svelte'
   import DemoWidgetInputCanvas from './DemoWidgetInputCanvas.svelte'
   import DemoWidgetStatus from './DemoWidgetStatus.svelte'
 
   let
+    predict,
     inputCanvas,
-    state = $state({
-      modelBytesTotal: 0,
-      mdoelBytesReceived: 0,
-      input: [],
-      prediction: null,
-      debug: {
-        thumbnails: [
-          [ 'trimmed',  new ImageData(1, 1) ],
-          [ 'scaled',   new ImageData(1, 1) ],
-          [ 'centered', new ImageData(1, 1) ],
-        ],
-        softmax: [],
-      }
+    pixels = $state.raw([]),
+    modelBytesTotal = $state(0),
+    modelBytesReceived = $state(0),
+    model = $state.raw([]),
+    prediction = $state(null),
+    debug = $state({
+      thumbnails: [
+        [ 'trimmed',  new ImageData(1, 1) ],
+        [ 'scaled',   new ImageData(1, 1) ],
+        [ 'centered', new ImageData(1, 1) ],
+      ],
+      softmax: [],
     }),
     modelHasLoaded = $derived(
-      state.modelBytesReceived > 0 &&
-      state.modelBytesReceived === state.modelBytesTotal
+      modelBytesReceived > 0 &&
+      modelBytesReceived === modelBytesTotal
     ),
     showDebug = $state(false)
 
-  connect(state)
+  new Worker(
+    new URL('../workers/network.load.ts', import.meta.url),
+    { type: 'module' },
+  ).addEventListener('message', (message) => {
+    switch (message.data.type) {
+      case 'loadStart':
+        modelBytesTotal = message.data.modelBytesTotal
+        break
+
+      case 'loadProgress':
+        modelBytesReceived = message.data.modelBytesReceived
+        break
+
+      case 'loadEnd':
+        model = message.data.model
+        break
+
+      default:
+        console.error('invalid message', message)
+        break
+    }
+  })
+
+  $effect(() => {
+    if (predict) {
+      predict.terminate()
+    }
+
+    // taking a long time...
+    predict = new Worker(
+      new URL('../workers/network.predict.ts', import.meta.url),
+      { type: 'module' },
+    )
+
+    predict.addEventListener('message', (message) => {
+      prediction = message.data.prediction
+      debug.softmax = message.data.softmax
+    })
+
+    predict.postMessage({
+      model,
+      input: pixels,
+    })
+  })
 </script>
 
 <section class={[
@@ -41,25 +83,25 @@
       <div class="canvas">
         <DemoWidgetInputCanvas
           bind:this={inputCanvas}
-          bind:pixels={state.input}
-          bind:debug={state.debug}
+          bind:pixels={pixels}
+          bind:debug={debug}
         />
       </div>
       <footer>
         <div class="prediction">
-          Prediction: <strong>{state.prediction}</strong>
+          Prediction: <strong>{prediction}</strong>
         </div>
         <DemoWidgetEraseButton onclick={inputCanvas.erase} />
       </footer>
     </article>
     <DemoWidgetStatus
-      modelBytesReceived={state.modelBytesReceived}
-      modelBytesTotal={state.modelBytesTotal}
+      modelBytesReceived={modelBytesReceived}
+      modelBytesTotal={modelBytesTotal}
     />
   </div>
   <div class="right">
     <DemoWidgetDebug
-      data={state.debug}
+      data={debug}
       bind:isVisible={showDebug}
     />
   </div>
