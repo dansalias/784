@@ -54,7 +54,6 @@
       predict.terminate()
     }
 
-    // taking a long time...
     predict = new Worker(
       new URL('../workers/network.predict.ts', import.meta.url),
       { type: 'module' },
