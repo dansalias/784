@@ -1,6 +1,5 @@
 let
   canvas: HTMLCanvasElement,
-  boundingClientRect: DOMRect,
   context: CanvasRenderingContext2D,
   onchange: (imageData: ImageData) => void,
   eventQueue: PointerEvent[] = [],
@@ -85,34 +84,27 @@ const scheduleRender = () => {
 }
 
 const render = () => {
-  boundingClientRect = canvas.getBoundingClientRect()
-
-  const offset = {
-    x: boundingClientRect.left,
-    y: boundingClientRect.top,
-  }
-
   for (const event of eventQueue) {
     if (event.type === 'pointerdown') {
       path.moveTo(
-        event.clientX - offset.x,
-        event.clientY - offset.y,
+        event.offsetX,
+        event.offsetY,
       )
       points.push(event)
     } else if (
       Math.hypot(
-        event.clientX - points.at(-1).clientX,
-        event.clientY - points.at(-1).clientY,
+        event.offsetX - points.at(-1).offsetX,
+        event.offsetY - points.at(-1).offsetY,
       ) > 5
     ) {
       const mp = {
-        x: 0.5 * (points.at(-1).clientX + event.clientX) - offset.x,
-        y: 0.5 * (points.at(-1).clientY + event.clientY) - offset.y,
+        x: 0.5 * (points.at(-1).offsetX + event.offsetX),
+        y: 0.5 * (points.at(-1).offsetY + event.offsetY),
       }
 
       path.quadraticCurveTo(
-        points.at(-1).clientX - offset.x,
-        points.at(-1).clientY - offset.y,
+        points.at(-1).offsetX,
+        points.at(-1).offsetY,
         mp.x,
         mp.y,
       )
