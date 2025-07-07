@@ -20,10 +20,7 @@
       ],
       softmax: [],
     }),
-    modelHasLoaded = $derived(
-      modelBytesReceived > 0 &&
-      modelBytesReceived === modelBytesTotal
-    ),
+    modelHasLoaded = $state(false),
     showDebug = $state(false)
 
   new Worker(
@@ -40,6 +37,7 @@
         break
 
       case 'loadEnd':
+        modelHasLoaded = true
         model = message.data.model
         break
 
