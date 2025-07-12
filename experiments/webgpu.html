@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>WebGPU</title>
+  </head>
+  <body>
+    <script type="module">
+      if (!navigator.gpu) {
+        throw new Error('WebGPU not supported')
+      }
+
+      const adapter = await navigator.gpu.requestAdapter()
+
+      if (!adapter) {
+        throw new Error('no GPUAdapter found')
+      }
+
+      const device = await adapter.requestDevice()
+
+      if (!device) {
+        throw new Error('unable to connect to WebGPU device')
+      }
+    </script>
+  </body>
+</html>
