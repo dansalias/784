@@ -52,26 +52,6 @@ pub fn read<R: Read>(mut reader: R) -> Result<ParametersFlat, Error> {
         .collect();
 
     Ok(parameters)
-    for layer_index in 1..number_of_layers {
-        let mut neurons = Vec::new();
-
-        for _ in 0..structure[layer_index] {
-            let mut weights = Vec::new();
-
-            for _ in 0..structure[layer_index - 1] {
-                weights.push(read_f64(&mut reader).unwrap())
-            }
-
-            let bias = read_f64(&mut reader).unwrap();
-
-            neurons.push(( weights, bias ));
-        }
-
-        parameters.push(neurons);
-    }
-
-    Ok(parameters)
-    */
 }
 
 pub fn write<W: Write>(mut writer: W, parameters: &ParametersFlat, structure: &[usize]) -> Result<(), Error> {
