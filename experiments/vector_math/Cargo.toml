@@ -1,0 +1,12 @@
+[package]
+name = "vector_math"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+divan = "0.1.17"
+rand = "0.8.5"
+
+[[bench]]
+name = "fprop"
+harness = false
