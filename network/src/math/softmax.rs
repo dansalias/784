@@ -14,10 +14,8 @@ impl ActivationFunction for Softmax {
     }
 
     fn bprop(&self, values: &[f64]) -> Vec<f64> {
-        values
-            .iter()
-            .map(|v| v * (1.0 - v))
-            .collect()
+        // tmp - hack:
+        vec![1.0; values.len()]
     }
 }
 
