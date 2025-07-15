@@ -7,7 +7,7 @@
 <aside class="status">
   <div>Loading model...</div>
   <div>
-    {formatKB(modelBytesReceived, false)} /
+    {formatKB(modelBytesReceived)} /
     {formatKB(modelBytesTotal)} KB
   </div>
 </aside>
