@@ -56,6 +56,7 @@ pub fn train(
 
             let gradient = util::vector::el_mean(gradients.clone());
 
+            // refactor: "raw" -> "flat"
             network.parameters.raw = network
                 .parameters
                 .raw
@@ -64,7 +65,9 @@ pub fn train(
                 .map(|(p, g)| p - g * options.learning_rate)
                 .collect();
 
-            if iteration % 10 == 0 {
+            // feat: options.update_accuracy_frequency
+            // tidy
+            if iteration % 1000 == 0 {
                 accuracy = Some(
                     data.test
                         .iter()
