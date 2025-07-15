@@ -11,6 +11,13 @@
     <DemoWidget />
   </main>
 
+  <a
+    href="/book"
+    class="book-link"
+  >
+    READ: An Introduction to Neural Networks
+  </a>
+
   <footer>
     <a
       class="external"
@@ -29,8 +36,16 @@
     align-items: center;
     gap: 2rem;
 
-    & > main {
+    > main {
       margin: 0 0 1rem;
+    }
+
+    > .book-link {
+      text-decoration: none;
+    }
+
+    > .book-link:hover {
+      text-decoration: underline;
     }
   }
 </style>
