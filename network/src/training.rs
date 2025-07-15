@@ -17,6 +17,8 @@ pub fn train(
     data: Data,
     options: TrainingOptions,
 ) {
+    let mut results: Vec<(f64, f64, f64)> = vec![];
+
     let reporter = report::Reporter::new();
 
     let mut accuracy = None;
@@ -41,10 +43,13 @@ pub fn train(
                 gradients.push(
                     backpropagation::get_gradient(
                         &network,
-                        &options.loss_function.bprop(
-                            &output,
-                            &data_point.expected,
-                        ),
+
+                        &output
+                            .iter()
+                            .zip(data_point.expected.iter())
+                            .map(|(a, y)| a - y)
+                            .collect::<Vec<f64>>()
+
                     ),
                 );
             }
@@ -96,5 +101,106 @@ pub fn train(
                 iteration_count,
             });
         }
+
+        let test_accuracy =
+            data.test
+                .iter()
+                .map(|data_point| {
+                    let output = network.fprop(&data_point.input);
+                    let estimate = output
+                        .iter()
+                        .enumerate()
+                        .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                        .map(|(i, _)| i)
+                        .unwrap();
+                    let actual = &data_point
+                        .expected
+                        .iter()
+                        .position(|el| el == &1.0)
+                        .unwrap();
+
+                    if estimate == *actual {
+                        1.0
+                    } else {
+                        0.0
+                    }
+                })
+                .sum::<f64>()
+                / data.test.len() as f64;
+
+        let test_loss =
+            data.test
+                .iter()
+                .map(|data_point| {
+                    let output = network.fprop(&data_point.input);
+                    options.loss_function.fprop(
+                        &output,
+                        &data_point.expected,
+                    )
+                    .iter()
+                    .sum::<f64>()
+                })
+                .sum::<f64>()
+                / data.test.len() as f64;
+
+        let train_loss =
+            data.train
+                .iter()
+                .map(|data_point| {
+                    let output = network.fprop(&data_point.input);
+                    options.loss_function.fprop(
+                        &output,
+                        &data_point.expected,
+                    )
+                    .iter()
+                    .sum::<f64>()
+                })
+                .sum::<f64>()
+                / data.train.len() as f64;
+
+        let train_accuracy =
+            data.train
+                .iter()
+                .map(|data_point| {
+                    let output = network.fprop(&data_point.input);
+                    let estimate = output
+                        .iter()
+                        .enumerate()
+                        .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                        .map(|(i, _)| i)
+                        .unwrap();
+                    let actual = &data_point
+                        .expected
+                        .iter()
+                        .position(|el| el == &1.0)
+                        .unwrap();
+
+                    if estimate == *actual {
+                        1.0
+                    } else {
+                        0.0
+                    }
+                })
+                .sum::<f64>()
+                / data.train.len() as f64;
+
+        results.push((
+            test_loss,
+            train_loss,
+            train_loss - test_loss,
+            // test_accuracy,
+            // train_accuracy,
+            // train_accuracy - test_accuracy,
+        ));
+
+        parameters::binary::write_file(
+            format!("./parameters/parameters.e{}.bin", epoch).as_str(),
+            &network.parameters.raw,
+            &[784, 300, 100, 10],
+        ).expect("unable to write parameters");
+    }
+
+    for result in results {
+        println!("{}, {}, {}", result.0, result.1, result.2);
     }
 }
